@@ -13,45 +13,109 @@ function App() {
 
 function TodoListCard() {
     const [items, setItems] = React.useState(null);
+    const [loadingExport, setLoadingExport] = React.useState(false);
+    const [loadingImport, setLoadingImport] = React.useState(false);
 
     React.useEffect(() => {
         fetch('/items')
-            .then(r => r.json())
-            .then(setItems);
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to fetch items');
+                return r.json();
+            })
+            .then(setItems)
+            .catch(() => alert('Error loading items'));
     }, []);
 
     const onNewItem = React.useCallback(
         newItem => {
             setItems([...items, newItem]);
         },
-        [items],
+        [items]
     );
 
-    const onItemUpdate = React.useCallback(
-        item => {
-            const index = items.findIndex(i => i.id === item.id);
-            setItems([
-                ...items.slice(0, index),
-                item,
-                ...items.slice(index + 1),
-            ]);
-        },
-        [items],
-    );
+    const handleExport = () => {
+        setLoadingExport(true);
+        fetch('/csv/export')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to export data');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'todo_list.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                alert('Error exporting data');
+            })
+            .finally(() => setLoadingExport(false));
+    };
 
-    const onItemRemoval = React.useCallback(
-        item => {
-            const index = items.findIndex(i => i.id === item.id);
-            setItems([...items.slice(0, index), ...items.slice(index + 1)]);
-        },
-        [items],
-    );
+    const handleImport = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Valida el tipo de archivo
+        if (!file.name.endsWith('.csv')) {
+            alert('Please upload a CSV file.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        setLoadingImport(true);
+        fetch('/csv/import', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to import data');
+            }
+            alert('Data imported successfully');
+            // Recarga la lista
+            return fetch('/items')
+                .then(r => r.json())
+                .then(setItems);
+        })
+        .catch(error => {
+            console.error('Import error:', error);
+            alert('Error importing data');
+        })
+        .finally(() => setLoadingImport(false));
+    };
 
     if (items === null) return 'Loading...';
 
     return (
         <React.Fragment>
             <AddItemForm onNewItem={onNewItem} />
+            <div className="text-center mb-3">
+                <button
+                    onClick={handleExport}
+                    className="btn btn-primary mr-2"
+                    disabled={loadingExport}
+                >
+                    {loadingExport ? 'Exporting...' : 'Export List to CSV'}
+                </button>
+                <label className="btn btn-secondary">
+                    {loadingImport ? 'Importing...' : 'Import CSV'}
+                    <input
+                        type="file"
+                        onChange={handleImport}
+                        style={{ display: 'none' }}
+                        accept=".csv"
+                    />
+                </label>
+            </div>
             {items.length === 0 && (
                 <p className="text-center">¡Aún no hay artículos! ¡Agrega uno arriba!</p>
             )}
@@ -59,8 +123,7 @@ function TodoListCard() {
                 <ItemDisplay
                     item={item}
                     key={item.id}
-                    onItemUpdate={onItemUpdate}
-                    onItemRemoval={onItemRemoval}
+                    onItemUpdate={onNewItem}
                 />
             ))}
         </React.Fragment>
@@ -103,8 +166,7 @@ function AddItemForm({ onNewItem }) {
                     <Button
                         type="submit"
                         variant="success"
-                        disabled={!newItem.length}
-                        className={submitting ? 'disabled' : ''}
+                        disabled={!newItem.length || submitting}
                     >
                         {submitting ? 'Adding...' : 'Add Item'}
                     </Button>
