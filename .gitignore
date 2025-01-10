@@ -1,0 +1,41 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Docker
+docker-compose.override.yml
+docker-compose.prod.yml
+docker-compose.test.yml
+.dockerignore
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Miscellaneous
+*.swp
+*~
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
