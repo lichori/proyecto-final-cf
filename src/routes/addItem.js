@@ -1,7 +1,13 @@
 const db = require('../persistence');
 
+let currentId = 1;
+
 module.exports = async (req, res) => {
     const item = {
+<<<<<<< HEAD
+=======
+        id: currentId++,
+>>>>>>> 2ef94baa23412229763ce767476a14b64c05fb54
         name: req.body.name,
         completed: false,
     };

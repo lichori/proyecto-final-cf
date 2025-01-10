@@ -42,11 +42,7 @@ async function init() {
 
     return new Promise((acc, rej) => {
         pool.query(
-            `CREATE TABLE IF NOT EXISTS todo_items (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255),
-                completed BOOLEAN
-            ) DEFAULT CHARSET utf8mb4`,
+            'CREATE TABLE IF NOT EXISTS todo_items (id varchar(255), name varchar(36), completed boolean) DEFAULT CHARSET utf8mb4',
             err => {
                 if (err) return rej(err);
                 console.log(`Connected to MySQL DB at host ${host}`);
