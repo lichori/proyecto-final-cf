@@ -1,0 +1,4 @@
+aws_access_key = ""
+aws_secret_key = ""
+region         = "us-west-2"
+tipo_instancia = "t3.micro"

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: proyecto-final-cf
+spec:
+  selector:
+    matchLabels:
+      app: app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: app
+        image: lisandrovazquez/proyecto-final-cf:latest
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: MYSQL_HOST
+          value: mysql
+        - name: MYSQL_USER
+          value: root
+        - name: MYSQL_PASSWORD
+          value: example
+        - name: MYSQL_DB
+          value: todolist
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  namespace: proyecto-final-cf
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3000
+  selector:
+    app: app
