@@ -5,14 +5,22 @@ const sqlite = require('../../src/persistence/sqlite');
 const TEMP_DIR = path.join(__dirname, 'temp');
 
 beforeAll(() => {
-    if (!fs.existsSync(TEMP_DIR)) {
-        fs.mkdirSync(TEMP_DIR, { recursive: true });
+    try {
+        if (!fs.existsSync(TEMP_DIR)) {
+            fs.mkdirSync(TEMP_DIR, { recursive: true });
+        }
+    } catch (err) {
+        console.error('Error setting up temporary directory:', err);
     }
 });
 
 afterAll(() => {
-    if (fs.existsSync(TEMP_DIR)) {
-        fs.rmdirSync(TEMP_DIR, { recursive: true });
+    try {
+        if (fs.existsSync(TEMP_DIR)) {
+            fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+        }
+    } catch (err) {
+        console.error('Error cleaning up temporary directory:', err);
     }
 });
 
