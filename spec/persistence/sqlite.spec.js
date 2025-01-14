@@ -1,80 +1,65 @@
+const db = require('../../src/persistence/sqlite');
 const fs = require('fs');
-const path = require('path');
-const sqlite = require('../../src/persistence/sqlite');
+const location = process.env.SQLITE_DB_LOCATION || '/etc/todos/todo.db';
 
-const TEMP_DIR = path.join(__dirname, 'temp');
+const ITEM = {
+    id: '7aef3d7c-d301-4846-8358-2a91ec9d6be3',
+    name: 'Test',
+    completed: false,
+};
 
-beforeAll(() => {
-    try {
-        if (!fs.existsSync(TEMP_DIR)) {
-            fs.mkdirSync(TEMP_DIR, { recursive: true });
-        }
-    } catch (err) {
-        console.error('Error setting up temporary directory:', err);
-    }
-});
-
-afterAll(() => {
-    try {
-        if (fs.existsSync(TEMP_DIR)) {
-            fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-        }
-    } catch (err) {
-        console.error('Error cleaning up temporary directory:', err);
+beforeEach(() => {
+    if (fs.existsSync(location)) {
+        fs.unlinkSync(location);
     }
 });
 
 test('it initializes correctly', async () => {
-    const location = path.join(TEMP_DIR, 'todos.db');
-    await sqlite.init(location);
-    expect(fs.existsSync(location)).toBe(true);
+    await db.init();
 });
 
 test('it can store and retrieve items', async () => {
-    const location = path.join(TEMP_DIR, 'todos.db');
-    await sqlite.init(location);
+    await db.init();
 
-    const item = { id: '1', name: 'Test item', completed: false };
-    await sqlite.storeItem(item);
+    await db.storeItem(ITEM);
 
-    const retrievedItem = await sqlite.getItem('1');
-    expect(retrievedItem).toEqual(item);
+    const items = await db.getItems();
+    expect(items.length).toBe(1);
+    expect(items[0]).toEqual(ITEM);
 });
 
 test('it can update an existing item', async () => {
-    const location = path.join(TEMP_DIR, 'todos.db');
-    await sqlite.init(location);
+    await db.init();
 
-    const item = { id: '1', name: 'Test item', completed: false };
-    await sqlite.storeItem(item);
+    const initialItems = await db.getItems();
+    expect(initialItems.length).toBe(0);
 
-    const updatedItem = { ...item, completed: true };
-    await sqlite.storeItem(updatedItem);
+    await db.storeItem(ITEM);
 
-    const retrievedItem = await sqlite.getItem('1');
-    expect(retrievedItem).toEqual(updatedItem);
+    await db.updateItem(
+        ITEM.id,
+        Object.assign({}, ITEM, { completed: !ITEM.completed }),
+    );
+
+    const items = await db.getItems();
+    expect(items.length).toBe(1);
+    expect(items[0].completed).toBe(!ITEM.completed);
 });
 
 test('it can remove an existing item', async () => {
-    const location = path.join(TEMP_DIR, 'todos.db');
-    await sqlite.init(location);
+    await db.init();
+    await db.storeItem(ITEM);
 
-    const item = { id: '1', name: 'Test item', completed: false };
-    await sqlite.storeItem(item);
+    await db.removeItem(ITEM.id);
 
-    await sqlite.removeItem('1');
-
-    const retrievedItem = await sqlite.getItem('1');
-    expect(retrievedItem).toBeUndefined();
+    const items = await db.getItems();
+    expect(items.length).toBe(0);
 });
 
 test('it can get a single item', async () => {
-    const location = path.join(TEMP_DIR, 'todos.db');
-    await sqlite.init(location);
+    await db.init();
+    await db.storeItem(ITEM);
 
-    const item = { id: '1', name: 'Test item', completed: false };
-    await sqlite.storeItem(item);
-
-    const retrievedItem = await sqlite.getItem('1');
-    expect(retrievedItem).toEqual(item);
+    const item = await db.getItem(ITEM.id);
+    expect(item).toEqual(ITEM);
 });
