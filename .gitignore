@@ -6,7 +6,6 @@ yarn-error.log
 # Logs
 logs/
 *.log
-<<<<<<< HEAD
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -91,7 +90,6 @@ public/
 
 # Windows files
 Thumbs.db
-=======
 *.log.*
 
 # Docker
@@ -106,6 +104,7 @@ docker-compose.test.yml
 .tfvars
 .terraform/
 .terraform.lock.hcl
+terraform.tfvars
 
 # Environment variables
 .env
@@ -125,4 +124,3 @@ docker-compose.test.yml
 *.iml
 *.sublime-workspace
 *.sublime-project
->>>>>>> 2ef94baa23412229763ce767476a14b64c05fb54
