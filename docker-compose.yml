@@ -7,12 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - MYSQL_HOST=db
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=example
-      - MYSQL_DB=todolist
+    env_file:
+      - .env
     depends_on:
       - db
     networks:
@@ -21,8 +17,8 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: todolist
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DB}
     ports:
       - "6033:3306"
     volumes:
