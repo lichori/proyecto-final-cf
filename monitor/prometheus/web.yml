@@ -1,0 +1,2 @@
+basic_auth_users:
+  admin: admin:$2y$12$eW5vL3Bhc3N3b3JkCg==
