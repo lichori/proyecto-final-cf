@@ -1,4 +1,5 @@
 const express = require('express');
+const promClient = require('prom-client');
 const app = express();
 const db = require('./persistence');
 const getItems = require('./routes/getItems');
@@ -9,6 +10,38 @@ const csvRoutes = require('./routes/csv');
 
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
+
+// Create a Registry which registers the metrics
+const register = new promClient.Registry();
+
+// Add a default metrics collection
+promClient.collectDefaultMetrics({ register });
+
+// Create a custom metric
+const httpRequestDurationMicroseconds = new promClient.Histogram({
+  name: 'http_request_duration_ms',
+  help: 'Duration of HTTP requests in ms',
+  labelNames: ['method', 'route', 'code'],
+  buckets: [50, 100, 200, 300, 400, 500, 600],
+});
+
+// Register the custom metric
+register.registerMetric(httpRequestDurationMicroseconds);
+
+// Middleware to measure request duration
+app.use((req, res, next) => {
+  const end = httpRequestDurationMicroseconds.startTimer();
+  res.on('finish', () => {
+    end({ method: req.method, route: req.route ? req.route.path : '', code: res.statusCode });
+  });
+  next();
+});
+
+// Expose metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
 
 app.get('/items', getItems);
 app.post('/items', addItem);

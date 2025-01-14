@@ -18,7 +18,8 @@
     "wait-port": "^1.0.4",
     "multer": "^1.4.4",
     "json2csv": "^5.0.7",
-    "csv-parse": "^5.0.0"
+    "csv-parse": "^5.0.0",
+    "prom-client": "15.1.3"
   },
   "resolutions": {
     "ansi-regex": "5.0.1"
