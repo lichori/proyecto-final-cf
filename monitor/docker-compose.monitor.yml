@@ -11,7 +11,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
 #      - '--web.config.file=/etc/prometheus/web.yml'
     networks:
-      - monitoring
+      - proyecto-final-cf_monitoring
 
   grafana:
     image: grafana/grafana
@@ -23,17 +23,18 @@ services:
     volumes:
       - ./grafana/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
     networks:
-      - monitoring
+      - proyecto-final-cf_monitoring
 
   node-exporter:
     image: prom/node-exporter
     ports:
       - "9100:9100"
     networks:
-      - monitoring
+      - proyecto-final-cf_monitoring
 
 volumes:
   prometheus:
 
 networks:
-  monitoring:
+  proyecto-final-cf_monitoring:
+    external: true

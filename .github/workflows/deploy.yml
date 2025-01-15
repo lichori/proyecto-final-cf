@@ -1,12 +1,14 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
@@ -41,13 +43,11 @@ jobs:
         kubectl get svc -n proyecto-final-cf
 
     - name: Add SSH key (Production only)
-      if: github.ref == 'refs/heads/main'
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Deploy to EC2 (Production only)
-      if: github.ref == 'refs/heads/main'
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           cd /path/to/your/app
