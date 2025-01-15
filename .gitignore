@@ -94,7 +94,7 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
-docker-compose.prod.yml
+#docker-compose.prod.yml
 docker-compose.test.yml
 .dockerignore
 

@@ -15,33 +15,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
-
-    - name: Initialize Terraform
-      run: terraform init
-      working-directory: ./terraform
-
-    - name: Apply Terraform configuration
-      run: terraform apply -auto-approve
-      working-directory: ./terraform
-
-    - name: Configure kubectl
-      run: aws eks --region us-west-2 update-kubeconfig --name example-cluster
-
-    - name: Apply Kubernetes configuration
-      run: |
-        kubectl apply -f ./k8s/namespace.yml
-        kubectl apply -f ./k8s/mysql-pvc.yaml
-        kubectl apply -f ./k8s/mysql-deployment.yaml
-        kubectl apply -f ./k8s/app-deployment.yaml
-        kubectl apply -f ./k8s/hpa.yaml
-
-    - name: Verify Kubernetes deployment
-      run: |
-        kubectl get pods -n proyecto-final-cf
-        kubectl get svc -n proyecto-final-cf
-
     - name: Add SSH key (Production only)
       uses: webfactory/ssh-agent@v0.5.3
       with:

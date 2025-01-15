@@ -1,0 +1,48 @@
+---
+- name: Setup directories and upload files
+  hosts: servers
+  become: true
+  vars:
+    todo_list_dir: /home/ubuntu/sistemas/todo-list
+    monitor_dir: /home/ubuntu/sistemas/monitor
+    docker_compose_src: ../docker-compose.prod.yml
+    docker_compose_dest: "{{ todo_list_dir }}/docker-compose.yml"
+    env_file_app_src: ../.env
+    env_file_app_dest: "{{ todo_list_dir }}/.env"
+    env_file_monitor_src: ../monitor/.env
+    env_file_monitor_dest: "{{ monitor_dir }}/.env"
+    monitor_src: ../monitor
+
+  tasks:
+    - name: Create todo-list directory
+      file:
+        path: "{{ todo_list_dir }}"
+        state: directory
+
+    - name: Create monitor directory
+      file:
+        path: "{{ monitor_dir }}"
+        state: directory
+
+    - name: Upload docker-compose.yml
+      copy:
+        src: "{{ docker_compose_src }}"
+        dest: "{{ docker_compose_dest }}"
+
+    - name: Upload .env file to the app
+      copy:
+        src: "{{ env_file_app_src }}"
+        dest: "{{ env_file_app_dest }}"
+
+    - name: Upload monitor directory
+      copy:
+        src: "{{ monitor_src }}/"
+        dest: "{{ monitor_dir }}/"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Upload .env file to the monitor
+      copy:
+        src: "{{ env_file_monitor_src }}"
+        dest: "{{ env_file_monitor_dest }}"
