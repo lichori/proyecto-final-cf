@@ -125,3 +125,7 @@ terraform.tfvars
 *.iml
 *.sublime-workspace
 *.sublime-project
+
+# K8s
+mysql-secret.yml
+

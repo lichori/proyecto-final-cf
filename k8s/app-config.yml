@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: proyecto-final-cf
+data:
+  NODE_ENV: production
+  MYSQL_HOST: mysql

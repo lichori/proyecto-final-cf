@@ -4,10 +4,10 @@ metadata:
   name: app
   namespace: proyecto-final-cf
 spec:
+  replicas: 3  # Aumentado para alta disponibilidad
   selector:
     matchLabels:
       app: app
-  replicas: 1
   template:
     metadata:
       labels:
@@ -16,17 +16,11 @@ spec:
       containers:
       - name: app
         image: lisandrovazquez/proyecto-final-cf:latest
-        env:
-        - name: NODE_ENV
-          value: production
-        - name: MYSQL_HOST
-          value: mysql
-        - name: MYSQL_USER
-          value: root
-        - name: MYSQL_PASSWORD
-          value: example
-        - name: MYSQL_DB
-          value: todolist
+        envFrom:
+        - secretRef:
+            name: mysql-credentials  # Usando Secret para credenciales
+        - configMapRef:
+            name: app-config         # Usando ConfigMap para otras variables
         ports:
         - containerPort: 3000
 ---
@@ -36,8 +30,9 @@ metadata:
   name: app
   namespace: proyecto-final-cf
 spec:
-  type: LoadBalancer
+  type: LoadBalancer  #LoadBalancer para asignar una IP pública
   ports:
   - port: 3000
+    targetPort: 3000 
   selector:
     app: app
