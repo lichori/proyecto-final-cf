@@ -1,10 +1,11 @@
 ---
-- name: Setup directories and upload files
+- name: Setup directories, install Docker and Kubernetes, and upload files
   hosts: servers
   become: true
   vars:
     todo_list_dir: /home/ubuntu/sistemas/todo-list
     monitor_dir: /home/ubuntu/sistemas/monitor
+    k8s_dir: /home/ubuntu/sistemas/k8s
     docker_compose_src: ../docker-compose.prod.yml
     docker_compose_dest: "{{ todo_list_dir }}/docker-compose.yml"
     env_file_app_src: ../.env
@@ -12,8 +13,51 @@
     env_file_monitor_src: ../monitor/.env
     env_file_monitor_dest: "{{ monitor_dir }}/.env"
     monitor_src: ../monitor
+    k8s_src: ../k8s
 
   tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Add user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Enable and start Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
     - name: Create todo-list directory
       file:
         path: "{{ todo_list_dir }}"
@@ -34,6 +78,11 @@
         src: "{{ env_file_app_src }}"
         dest: "{{ env_file_app_dest }}"
 
+    - name: Upload .env file to the monitor
+      copy:
+        src: "{{ env_file_monitor_src }}"
+        dest: "{{ env_file_monitor_dest }}"
+
     - name: Upload monitor directory
       copy:
         src: "{{ monitor_src }}/"
@@ -42,7 +91,10 @@
         group: ubuntu
         mode: '0755'
 
-    - name: Upload .env file to the monitor
+    - name: Upload Kubernetes manifests
       copy:
-        src: "{{ env_file_monitor_src }}"
-        dest: "{{ env_file_monitor_dest }}"
+        src: "{{ k8s_src }}/"
+        dest: "{{ k8s_dir }}/"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
