@@ -13,14 +13,21 @@ spec:
       labels:
         app: mysql
     spec:
+    spec:
       containers:
       - name: mysql
         image: mysql:8.0
         env:
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: MYSQL_USER
         - name: MYSQL_ROOT_PASSWORD
-          value: example
-        - name: MYSQL_DATABASE
-          value: todolist
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: MYSQL_PASSWORD
         ports:
         - containerPort: 3306
         volumeMounts:
