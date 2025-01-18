@@ -42,20 +42,20 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Upload k8s artifact to server
-      run: scp -o StrictHostKeyChecking=no k8s.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/sistemas
+      run: scp -o StrictHostKeyChecking=no k8s.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:sistemas
 
     - name: Extract k8s on server
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-        mkdir -p /home/ubuntu/sistemas/k8s
-        tar -xzf /home/ubuntu/sistemas/k8s.tar.gz -C /home/ubuntu/sistemas/k8s
-        rm /home/ubuntu/sistemas/k8s.tar.gz
+        mkdir -p sistemas/k8s
+        tar -xzf sistemas/k8s.tar.gz -C istemas/k8s
+        rm sistemas/k8s.tar.gz
         EOF
 
     - name: Deploy to Kubernetes
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-        cd /home/ubuntu/sistemas/k8s
+        cd sistemas/k8s
         kubectl apply -f .
         kubectl get all -n proyecto-final-cf
         EOF
