@@ -24,7 +24,7 @@ jobs:
       run: ls -l ./k8s
 
     - name: Upload k8s directory
-      run: scp -o StrictHostKeyChecking=no -r ./k8s ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/sistemas/k8s
+      run: scp -o StrictHostKeyChecking=no -r ./k8s ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}sistemas/k8s
 
     - name: Deploy to EC2 (Production only)
       run: |
