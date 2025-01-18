@@ -37,4 +37,3 @@ volumes:
 
 networks:
   todo-list_monitoring:
-    external: true
