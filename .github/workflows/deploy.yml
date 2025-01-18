@@ -7,33 +7,52 @@ on:
       - completed
 
 jobs:
-  deploy:
-    if: github.ref == 'refs/heads/main'
+  compress-and-store:
+    name: Compress and Store k8s Artifact
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Compress k8s folder
+      run: tar -czf k8s.tar.gz -C ./k8s .
+
+    - name: Upload k8s artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: k8s-artifact
+        path: k8s.tar.gz
+
+  deploy:
+    name: Deploy k8s Resources
+    needs: compress-and-store
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download k8s artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: k8s-artifact
+        path: .
+
     - name: Add SSH key (Production only)
       uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Verify k8s folder exists
-      run: ls -l ./k8s
-
-    - name: Upload compressed k8s folder
+    - name: Upload k8s artifact to server
       run: scp -o StrictHostKeyChecking=no k8s.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/sistemas
 
-    - name: Extract k8s folder on remote server
+    - name: Extract k8s on server
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
         mkdir -p /home/ubuntu/sistemas/k8s
         tar -xzf /home/ubuntu/sistemas/k8s.tar.gz -C /home/ubuntu/sistemas/k8s
         rm /home/ubuntu/sistemas/k8s.tar.gz
         EOF
-    - name: Deploy to EC2 (Production only)
+
+    - name: Deploy to Kubernetes
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
         cd /home/ubuntu/sistemas/k8s
