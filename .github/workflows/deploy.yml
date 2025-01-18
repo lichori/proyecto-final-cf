@@ -18,13 +18,18 @@ jobs:
     - name: Add SSH key (Production only)
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Upload k8s directory
+      run: scp -o StrictHostKeyChecking=no -r ./k8s ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/ubuntu/sistemas/k8s
 
     - name: Deploy to EC2 (Production only)
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          cd /path/to/your/app
-          git pull origin main
-          docker-compose down
-          docker-compose up -d --build
+        # Cambiar a la carpeta que contiene los manifiestos YAML
+        cd /home/ubuntu/sistemas/k8s
+        # Aplicar todos los archivos YAML en el directorio
+        kubectl apply -f .
+        # Verificar el estado de los recursos en el namespace (opcional)
+        kubectl get all -n proyecto-final-cf
         EOF
