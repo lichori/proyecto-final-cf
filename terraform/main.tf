@@ -64,4 +64,9 @@ resource "aws_instance" "web" {
   key_name      = "codigo-facilito"
   tags          = local.common_tags
   vpc_security_group_ids = [aws_security_group.web_sg.id]
+  
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp2"
+  }
 }
